@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text;
 using System.Threading.Channels;
+using HtmlAgilityPack;
 using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
@@ -10,9 +11,36 @@ class Program
 {
     static void Main()
     {
+        /*
         string pdfFilePath = "C:\\Users\\Laptop\\Desktop\\punkttabelle_rudolph_2023.pdf";
+        Creater(pdfFilePath);
+        */
+        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=5161550";
+        List<double> worldrecords = GettingTimes();
+        AthleteRecords(url);
+    }
+    static double Calculator()
+    {
+        double record = 102.0;
+        double points = 0.764;
+        double doubled = Math.Round((1 / Math.Pow(points, (1.0 / 3.0)) * record), 2);
+        return doubled;
+    }
+    static List<double> AthleteRecords(string url)
+    {
+        List<double> records = new List<double>();
+        var rawRecords = Loader(url).DocumentNode.SelectNodes("//tr[@class='athleteBest0']//td[@class='code']");
+        for (int i = 1; i <  rawRecords.Count; i++)
+        {
+            records.Add(Convert.ToDouble(rawRecords[i].InnerText));
+            Console.WriteLine(records[i]);
+        }
+        return records;
+    }
+    static void Creater(string pdfFilePath)
+    {
         StringBuilder text = new StringBuilder();
-        List<string> nazwy = new List<string>() {"RudolphTable8YearsOldBoys", "RudolphTable9YearsOldBoys", "RudolphTable10YearsOldBoys", "RudolphTable11YearsOldBoys", "RudolphTable12YearsOldBoys", "RudolphTable13YearsOldBoys", "RudolphTable14YearsOldBoys", "RudolphTable15YearsOldBoys", "RudolphTable16YearsOldBoys", "RudolphTable17YearsOldBoys", "RudolphTable18YearsOldBoys", "RudolphTableOpenBoys", "RudolphTable8YearsOldGirls", "RudolphTable9YearsOldGirls", "RudolphTable10YearsOldGirls", "RudolphTable11YearsOldGirls", "RudolphTable12YearsOldGirls", "RudolphTable13YearsOldGirls", "RudolphTable14YearsOldGirls", "RudolphTable15YearsOldGirls", "RudolphTable16YearsOldGirls", "RudolphTable17YearsOldGirls", "RudolphTable18YearsOldGirls", "RudolphTableOpenGirls", };
+        List<string> nazwy = new List<string>() { "RudolphTable8YearsOldBoys", "RudolphTable9YearsOldBoys", "RudolphTable10YearsOldBoys", "RudolphTable11YearsOldBoys", "RudolphTable12YearsOldBoys", "RudolphTable13YearsOldBoys", "RudolphTable14YearsOldBoys", "RudolphTable15YearsOldBoys", "RudolphTable16YearsOldBoys", "RudolphTable17YearsOldBoys", "RudolphTable18YearsOldBoys", "RudolphTableOpenBoys", "RudolphTable8YearsOldGirls", "RudolphTable9YearsOldGirls", "RudolphTable10YearsOldGirls", "RudolphTable11YearsOldGirls", "RudolphTable12YearsOldGirls", "RudolphTable13YearsOldGirls", "RudolphTable14YearsOldGirls", "RudolphTable15YearsOldGirls", "RudolphTable16YearsOldGirls", "RudolphTable17YearsOldGirls", "RudolphTable18YearsOldGirls", "RudolphTableOpenGirls", };
         List<double> rudolphTable8YearsOldBoys = new List<double>();
         List<double> rudolphTable9YearsOldBoys = new List<double>();
         List<double> rudolphTable10YearsOldBoys = new List<double>();
@@ -38,7 +66,7 @@ class Program
         List<double> rudolphTable18YearsOldGirls = new List<double>();
         List<double> rudolphTableOpenGirls = new List<double>();
         List<List<double>> listalist = new List<List<double>>() { rudolphTable8YearsOldBoys, rudolphTable9YearsOldBoys, rudolphTable10YearsOldBoys, rudolphTable11YearsOldBoys, rudolphTable12YearsOldBoys, rudolphTable13YearsOldBoys, rudolphTable14YearsOldBoys, rudolphTable15YearsOldBoys, rudolphTable16YearsOldBoys, rudolphTable17YearsOldBoys, rudolphTable18YearsOldBoys, rudolphTableOpenBoys, rudolphTable8YearsOldGirls, rudolphTable9YearsOldGirls, rudolphTable10YearsOldGirls, rudolphTable11YearsOldGirls, rudolphTable12YearsOldGirls, rudolphTable13YearsOldGirls, rudolphTable14YearsOldGirls, rudolphTable15YearsOldGirls, rudolphTable16YearsOldGirls, rudolphTable17YearsOldGirls, rudolphTable18YearsOldGirls, rudolphTableOpenGirls, };
-        List<string> collumnNames = new List<string>() { "Punkty", "Freestyle_50m", "Freestyle_100m", "Freestyle_200m", "Freestyle_400m", "Freestyle_800m", "Freestyle_1500m", "Breaststroke_50m", "Breaststroke_100m", "Breaststroke_200m", "Butterfly_50m", "Butterfly_100m", "Butterfly_200m", "Backstroke_50m", "Backstroke_100m", "Backstroke_200m", "Medley_200m", "Medley_400m"};
+        List<string> collumnNames = new List<string>() { "Punkty", "Freestyle_50m", "Freestyle_100m", "Freestyle_200m", "Freestyle_400m", "Freestyle_800m", "Freestyle_1500m", "Breaststroke_50m", "Breaststroke_100m", "Breaststroke_200m", "Butterfly_50m", "Butterfly_100m", "Butterfly_200m", "Backstroke_50m", "Backstroke_100m", "Backstroke_200m", "Medley_200m", "Medley_400m" };
 
         using (PdfReader pdfReader = new PdfReader(pdfFilePath))
         {
@@ -53,10 +81,9 @@ class Program
             }
         }
         List<string> pages = text.ToString().Split("DieDisziplinen 400-1500F, 100/200S, 200R, 400Lsindstatistischunzureichendgesichertund solltenzurLeistungseinschätzung nichtherangezogenwerden.2").ToList();
-        // Teraz 'text' zawiera tekst z całego dokumentu PDF
         List<double> times = new List<double>();
         int adder = 0;
-        foreach(string page in pages)
+        foreach (string page in pages)
         {
             List<string> w = page.Split("\n").ToList();
             for (int i = 0; i < w.Count; i++)
@@ -167,7 +194,6 @@ class Program
                 }
             }
         }
-
         for (int i = 0; i < nazwy.Count; i++)
         {
             Connection(nazwy[i], collumnNames, listalist[i]);
@@ -175,9 +201,8 @@ class Program
     }
     static double CSTD (string xd)
     {
-        double newer = 0;
         string[] list = xd.Split(':');
-        newer = Math.Round(((list.Length > 1) ? (Convert.ToDouble(list[0]) * 60) + Convert.ToDouble(list[1]) : Convert.ToDouble(list[0])),2);
+        double newer = Math.Round(((list.Length > 1) ? (Convert.ToDouble(list[0]) * 60) + Convert.ToDouble(list[1]) : Convert.ToDouble(list[0])),2);
         return newer;
     }
     static string CreateTable(string name, List<string> collumnNames)
@@ -258,5 +283,73 @@ class Program
             object result = command.ExecuteScalar();
             return result != null && (bool)result;
         }
+    }
+    public static HtmlAgilityPack.HtmlDocument Loader(string url)
+    {
+        var httpClient = new HttpClient();
+        var html = httpClient.GetStringAsync(url).Result;
+        var htmlDocument = new HtmlDocument();
+        htmlDocument.LoadHtml(html);
+        return htmlDocument;
+    }
+    public static List<double> GettingLongCurseWorldRecordsMen()
+    {
+        string url = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=1";
+        var currentTimes = Loader(url).DocumentNode.SelectSingleNode("//td[@class='swimtime']");
+        List<double> tab = new List<double>();
+        for (int i = 0; i < 1; i++)
+        {
+            tab.Add(CSTD(currentTimes.InnerText));
+            Console.WriteLine(tab[i]);
+        }
+        return tab;
+    }
+    public static List<string> GettingDistancesFromLinks()
+    {
+        string url = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=0";
+        List<string> tab = new List<string>();
+        List<string> distances = new List<string>() {"1", "2", "3", "5", "6", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19" };
+        for (int i = 0; i < distances.Count; i++)
+        {
+            tab.Add(url.Replace("styleId=0", $"styleId={distances[i]}"));
+        }
+        return tab;
+    }
+    public static List<string> GettingDistances()
+    {
+        List<string> url = GettingDistancesFromLinks();
+        List<string> strings = new List<string>();
+
+        foreach (var u in url)
+        {
+            var htmlDocument = Loader(u);
+            if (!String.IsNullOrEmpty(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText) && !(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText == "Record history for 300m Freestyle") && !(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText == "Record history for 1000m Freestyle"))
+            {
+                strings.Add(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText.Replace("Record history for ", ""));
+            }
+        }
+        for (int i = 0; i < strings.Count; i++)
+        {
+            Console.WriteLine(strings[i]);
+        }
+        return strings;
+    }
+    public static List<double> GettingTimes()
+    {
+        List<string> url = GettingDistancesFromLinks();
+        List<double> strings = new List<double>();
+        foreach (var u in url)
+        {
+            var htmlDocument = Loader(u);
+            if (!String.IsNullOrEmpty(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText) && !(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText == "Record history for 300m Freestyle") && !(htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText == "Record history for 1000m Freestyle"))
+            {
+                strings.Add(CSTD(htmlDocument.DocumentNode.SelectSingleNode("//a[@class='time']").InnerText));
+            }
+        }
+        for (int i = 0; i < strings.Count; i++)
+        {
+            Console.WriteLine(strings[i]);
+        }
+        return strings;
     }
 }
