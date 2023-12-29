@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Data;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Channels;
 using HtmlAgilityPack;
@@ -6,34 +8,100 @@ using iText.Kernel.Pdf;
 using iText.Kernel.Pdf.Canvas.Parser;
 using iText.Kernel.Pdf.Canvas.Parser.Listener;
 using Npgsql;
+using System.Text.RegularExpressions;
 
 class Program
 {
     static void Main()
     {
+        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4328366";
+        List<string> queryList = new List<string>();
+        int adder = 0;
+        Dictionary<string, double> records = Calculator(AthleteRecords(url));
+        Console.WriteLine(GetTableName(url));
+        List<string> queries = GetRudolphPointsQuery(url);
+        foreach(var (key, value) in records)
+        {
+            DataBaseConnection(queries[adder], key);
+            adder++;
+        }
         /*
         string pdfFilePath = "C:\\Users\\Laptop\\Desktop\\punkttabelle_rudolph_2023.pdf";
         Creater(pdfFilePath);
-        */
-        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=5161550";
+        
+        
         List<double> worldrecords = GettingTimes();
-        AthleteRecords(url);
-    }
-    static double Calculator()
-    {
-        double record = 102.0;
-        double points = 0.764;
-        double doubled = Math.Round((1 / Math.Pow(points, (1.0 / 3.0)) * record), 2);
-        return doubled;
-    }
-    static List<double> AthleteRecords(string url)
-    {
-        List<double> records = new List<double>();
-        var rawRecords = Loader(url).DocumentNode.SelectNodes("//tr[@class='athleteBest0']//td[@class='code']");
-        for (int i = 1; i <  rawRecords.Count; i++)
+        
+        Dictionary<string, double> records = AthleteRecords(url);
+        foreach(var(key, value) in records)
         {
-            records.Add(Convert.ToDouble(rawRecords[i].InnerText));
-            Console.WriteLine(records[i]);
+            Console.WriteLine(key + " " + value);
+        }
+        Calculator(records);
+        */
+
+    }
+    static string StrokeTranslation(string distance)
+    {
+        string stroke;
+        string[] words = distance.Split(' ');
+        switch (words[1])
+        {
+            case "Freestyle":
+                stroke = "freestyle_" + words[0];
+                return stroke;
+            case "Backstroke":
+                stroke = "backstroke_" + words[0];
+                return stroke;
+            case "Breaststroke":
+                stroke = "breaststroke_" + words[0];
+                return stroke;
+            case "Butterfly":
+                stroke = "butterfly_" + words[0];
+                return stroke;
+            case "Medley":
+                stroke = "medley_" + words[0];
+                return stroke;
+            default:
+                return "";
+        }
+    }
+    static Dictionary<string, double> Calculator(Dictionary<string, double> records)
+    {
+        List<double> wrs = GettingTimesV2(records);
+        Dictionary<string, double> doubleded = new Dictionary<string, double>();
+        int adder = 0;
+        foreach (var (key,value) in records)
+        {
+            try
+            {
+                double doubled = Math.Round(((1 / Math.Pow((value/1000), (1.0 / 3.0))) * wrs[adder]), 2);
+                doubleded.Add(StrokeTranslation(key), doubled);
+                adder++;
+            }
+            catch (Exception ex)
+            {
+
+            }
+        }
+        foreach(var (key, value) in doubleded)
+        {
+            Console.WriteLine(key + " " + value);
+        }
+        return doubleded;
+    }
+    static Dictionary<string, double> AthleteRecords(string url)
+    {
+        Dictionary<string, double> records = new Dictionary<string, double>();  
+        var rawRecords = Loader(url).DocumentNode.SelectNodes("//td[@class='code']");
+        var distances = Loader(url).DocumentNode.SelectNodes("//td[@class='event']//a");
+        var pool = Loader(url).DocumentNode.SelectNodes("//td[@class='course']");
+        for (int i = 0; i <  rawRecords.Count; i++)
+        {
+            if (rawRecords[i].InnerText != "-" && pool[i].InnerText == "25m"  && distances[i].InnerText != "100m Medley" && !distances[i].InnerText.Contains("25m"))
+            {
+                records.Add(distances[i].InnerText,Convert.ToDouble(rawRecords[i].InnerText));
+            }
         }
         return records;
     }
@@ -284,7 +352,7 @@ class Program
             return result != null && (bool)result;
         }
     }
-    public static HtmlAgilityPack.HtmlDocument Loader(string url)
+    static HtmlAgilityPack.HtmlDocument Loader(string url)
     {
         var httpClient = new HttpClient();
         var html = httpClient.GetStringAsync(url).Result;
@@ -292,7 +360,7 @@ class Program
         htmlDocument.LoadHtml(html);
         return htmlDocument;
     }
-    public static List<double> GettingLongCurseWorldRecordsMen()
+    static List<double> GettingLongCurseWorldRecordsMen()
     {
         string url = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=1";
         var currentTimes = Loader(url).DocumentNode.SelectSingleNode("//td[@class='swimtime']");
@@ -304,7 +372,7 @@ class Program
         }
         return tab;
     }
-    public static List<string> GettingDistancesFromLinks()
+    static List<string> GettingDistancesFromLinks()
     {
         string url = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=0";
         List<string> tab = new List<string>();
@@ -315,7 +383,7 @@ class Program
         }
         return tab;
     }
-    public static List<string> GettingDistances()
+    static List<string> GettingDistances()
     {
         List<string> url = GettingDistancesFromLinks();
         List<string> strings = new List<string>();
@@ -334,7 +402,7 @@ class Program
         }
         return strings;
     }
-    public static List<double> GettingTimes()
+    static List<double> GettingTimes()
     {
         List<string> url = GettingDistancesFromLinks();
         List<double> strings = new List<double>();
@@ -351,5 +419,89 @@ class Program
             Console.WriteLine(strings[i]);
         }
         return strings;
+    }
+    static List<double> GettingTimesV2(Dictionary<string,double> records)
+    {
+        List<string> url = GettingDistancesFromLinks();
+        List<double> strings = new List<double>();
+        List<string> helper = new List<string>();
+        foreach(var key in  records)
+        {
+            helper.Add(key.Key);
+        }
+        foreach (var u in url)
+        {
+            var htmlDocument = Loader(u);
+            if (helper.Any(help => help == htmlDocument.DocumentNode.SelectSingleNode("//b").InnerText.Replace("Record history for ","")))
+            {
+                strings.Add(CSTD(htmlDocument.DocumentNode.SelectSingleNode("//a[@class='time']").InnerText));
+            }
+        }
+        return strings;
+    }
+    static string CheckGender(string url)
+    {
+        var gender = Loader(url).DocumentNode.SelectSingleNode("//div[@id='name']").InnerHtml;
+        return (gender.Contains("gender1.png")) ? "boys" : "girls";
+    }
+    static string GetAge(string url)
+    {
+        int date = DateTime.Now.Year - Convert.ToInt32(GetNumericValue(Loader(url).DocumentNode.SelectSingleNode("//div[@id='name']").InnerText));
+        return (date <= 18) ? Convert.ToString(date) : "open";
+    }
+    static string GetNumericValue(string input)
+    {
+        Regex regex = new Regex(@"\d+");
+        Match match = regex.Match(input);
+        return (match.Success) ? match.Value : string.Empty;
+    }
+    static string GetTableName(string url)
+    {
+        return (GetAge(url) == "open") ? $"rudolphtableopen{CheckGender(url)}" : $"rudolphtable{GetAge(url)}yearsold{CheckGender(url)}";
+    }
+    static List<string> GetRudolphPointsQuery(string url)
+    {
+        Dictionary<string,double> records = Calculator(AthleteRecords(url));
+        string tableName = GetTableName(url);
+        List<string> queries = new List<string>();
+        foreach(var (key, value) in records)
+        {
+            queries.Add($"SELECT punkty FROM {GetTableName(url)} WHERE {key} >= {value} LIMIT 1;");
+        }
+        return queries;
+    }
+
+    static void DataBaseConnection(string query, string key)
+    {
+        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=RudolphTable";
+        // Utwórz obiekt NpgsqlConnection
+        using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
+        {
+            // Otwórz połączenie
+            connection.Open();
+            // Utwórz obiekt NpgsqlCommand
+            using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
+            {
+                using (NpgsqlDataReader reader = command.ExecuteReader())
+                {
+                    // Sprawdź, czy istnieją wyniki
+                    if (reader.HasRows)
+                    {
+                        // Przetwarzaj wyniki zapytania
+                        while (reader.Read())
+                        {
+                            // Odczytaj wartości z wyników
+                            object value1 = reader["punkty"];
+
+                            Console.WriteLine($"{key}: {value1}");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine($"Na dystansie {key} uzyskałeś/aś mniej niż 1 pkt");
+                    }
+                }
+            }
+        }
     }
 }
