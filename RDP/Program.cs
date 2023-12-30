@@ -14,10 +14,13 @@ class Program
 {
     static void Main()
     {
-        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4328366";
+        
+        string pdfFilePath = "C:\\Users\\mzkwcim\\Desktop\\punkttabelle_rudolph_2023.pdf";
+        Creater(pdfFilePath);
+        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4657304";
         List<string> queryList = new List<string>();
         int adder = 0;
-        Dictionary<string, double> records = Calculator(AthleteRecords(url));
+        Dictionary<string, double> records = Calculator(AthleteRecords(url), url);
         Console.WriteLine(GetTableName(url));
         List<string> queries = GetRudolphPointsQuery(url);
         foreach(var (key, value) in records)
@@ -25,21 +28,7 @@ class Program
             DataBaseConnection(queries[adder], key);
             adder++;
         }
-        /*
-        string pdfFilePath = "C:\\Users\\Laptop\\Desktop\\punkttabelle_rudolph_2023.pdf";
-        Creater(pdfFilePath);
         
-        
-        List<double> worldrecords = GettingTimes();
-        
-        Dictionary<string, double> records = AthleteRecords(url);
-        foreach(var(key, value) in records)
-        {
-            Console.WriteLine(key + " " + value);
-        }
-        Calculator(records);
-        */
-
     }
     static string StrokeTranslation(string distance)
     {
@@ -66,9 +55,9 @@ class Program
                 return "";
         }
     }
-    static Dictionary<string, double> Calculator(Dictionary<string, double> records)
+    static Dictionary<string, double> Calculator(Dictionary<string, double> records, string url)
     {
-        List<double> wrs = GettingTimesV2(records);
+        List<double> wrs = GettingTimesV2(records, url);
         Dictionary<string, double> doubleded = new Dictionary<string, double>();
         int adder = 0;
         foreach (var (key,value) in records)
@@ -77,6 +66,7 @@ class Program
             {
                 double doubled = Math.Round(((1 / Math.Pow((value/1000), (1.0 / 3.0))) * wrs[adder]), 2);
                 doubleded.Add(StrokeTranslation(key), doubled);
+                Console.WriteLine(key + " " + value);
                 adder++;
             }
             catch (Exception ex)
@@ -305,7 +295,7 @@ class Program
     }
     static void Connection(string name, List<string> collumnNames, List<double> tableValues)
     {
-        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=RudolphTable";
+        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=postgresv2";
 
         using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
         {
@@ -372,20 +362,29 @@ class Program
         }
         return tab;
     }
-    static List<string> GettingDistancesFromLinks()
+    static List<string> GettingDistancesFromLinks(string url)
     {
-        string url = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=0";
+        string url2 = "";
+        if (CheckGender(url) == "boys")
+        {
+            url2 = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=0";
+        }
+        else
+        {
+            url2 = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=2&course=LCM&styleId=0";
+        }
+        
         List<string> tab = new List<string>();
         List<string> distances = new List<string>() {"1", "2", "3", "5", "6", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19" };
         for (int i = 0; i < distances.Count; i++)
         {
-            tab.Add(url.Replace("styleId=0", $"styleId={distances[i]}"));
+            tab.Add(url2.Replace("styleId=0", $"styleId={distances[i]}"));
         }
         return tab;
     }
-    static List<string> GettingDistances()
+    static List<string> GettingDistances(string urls)
     {
-        List<string> url = GettingDistancesFromLinks();
+        List<string> url = GettingDistancesFromLinks(urls);
         List<string> strings = new List<string>();
 
         foreach (var u in url)
@@ -402,9 +401,9 @@ class Program
         }
         return strings;
     }
-    static List<double> GettingTimes()
+    static List<double> GettingTimes(string urls)
     {
-        List<string> url = GettingDistancesFromLinks();
+        List<string> url = GettingDistancesFromLinks(urls);
         List<double> strings = new List<double>();
         foreach (var u in url)
         {
@@ -420,9 +419,9 @@ class Program
         }
         return strings;
     }
-    static List<double> GettingTimesV2(Dictionary<string,double> records)
+    static List<double> GettingTimesV2(Dictionary<string,double> records, string urls)
     {
-        List<string> url = GettingDistancesFromLinks();
+        List<string> url = GettingDistancesFromLinks(urls);
         List<double> strings = new List<double>();
         List<string> helper = new List<string>();
         foreach(var key in  records)
@@ -461,7 +460,7 @@ class Program
     }
     static List<string> GetRudolphPointsQuery(string url)
     {
-        Dictionary<string,double> records = Calculator(AthleteRecords(url));
+        Dictionary<string,double> records = Calculator(AthleteRecords(url), url);
         string tableName = GetTableName(url);
         List<string> queries = new List<string>();
         foreach(var (key, value) in records)
@@ -473,7 +472,7 @@ class Program
 
     static void DataBaseConnection(string query, string key)
     {
-        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=RudolphTable";
+        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=postgresv2";
         // Utwórz obiekt NpgsqlConnection
         using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
         {
