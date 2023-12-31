@@ -32,6 +32,7 @@ class Program
     }
     static string StrokeTranslation(string distance)
     {
+        // this part of code is responsible for translation of stroke
         string stroke;
         string[] words = distance.Split(' ');
         switch (words[1])
