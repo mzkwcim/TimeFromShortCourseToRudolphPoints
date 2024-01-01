@@ -14,9 +14,10 @@ class Program
 {
     static void Main()
     {
-        
+        //following 2 lines should be used only when there is new rudolphtable to insert into database
         string pdfFilePath = "C:\\Users\\mzkwcim\\Desktop\\punkttabelle_rudolph_2023.pdf";
         Creater(pdfFilePath);
+        // string url is a profile of an Athlete on swimrankings.net
         string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4657304";
         List<string> queryList = new List<string>();
         int adder = 0;
@@ -58,6 +59,8 @@ class Program
     }
     static Dictionary<string, double> Calculator(Dictionary<string, double> records, string url)
     {
+        /* in this function program uses table of word records and table of certain athlete records, then by reversing pattern on fina points program gets certain time (equivalent of time on long course with certain amount of fina points) */
+        // the basic pattern is FINA Points = ((World Record/Athlete Personal Best)^3)*1000
         List<double> wrs = GettingTimesV2(records, url);
         Dictionary<string, double> doubleded = new Dictionary<string, double>();
         int adder = 0;
@@ -84,11 +87,15 @@ class Program
     static Dictionary<string, double> AthleteRecords(string url)
     {
         Dictionary<string, double> records = new Dictionary<string, double>();  
+        //rawRecords gets fina points
         var rawRecords = Loader(url).DocumentNode.SelectNodes("//td[@class='code']");
+        //distances gets event name
         var distances = Loader(url).DocumentNode.SelectNodes("//td[@class='event']//a");
+        // pool gets pool length 25m or 50m
         var pool = Loader(url).DocumentNode.SelectNodes("//td[@class='course']");
         for (int i = 0; i <  rawRecords.Count; i++)
         {
+            //if statement here is kind of filter that handles empty htmls, only allows 25m distances, discards 100m Medley, couse there is no such an event on long course. There is also clausule that doesn't allow 25m distances, couse it is kids only distance and it coused some exceptions
             if (rawRecords[i].InnerText != "-" && pool[i].InnerText == "25m"  && distances[i].InnerText != "100m Medley" && !distances[i].InnerText.Contains("25m"))
             {
                 records.Add(distances[i].InnerText,Convert.ToDouble(rawRecords[i].InnerText));
@@ -98,6 +105,7 @@ class Program
     }
     static void Creater(string pdfFilePath)
     {
+        //in the near future i will shorten this part of code, i was lazy, couse my initial idea on how to prepare this code with class had a lot of errors.
         StringBuilder text = new StringBuilder();
         List<string> nazwy = new List<string>() { "RudolphTable8YearsOldBoys", "RudolphTable9YearsOldBoys", "RudolphTable10YearsOldBoys", "RudolphTable11YearsOldBoys", "RudolphTable12YearsOldBoys", "RudolphTable13YearsOldBoys", "RudolphTable14YearsOldBoys", "RudolphTable15YearsOldBoys", "RudolphTable16YearsOldBoys", "RudolphTable17YearsOldBoys", "RudolphTable18YearsOldBoys", "RudolphTableOpenBoys", "RudolphTable8YearsOldGirls", "RudolphTable9YearsOldGirls", "RudolphTable10YearsOldGirls", "RudolphTable11YearsOldGirls", "RudolphTable12YearsOldGirls", "RudolphTable13YearsOldGirls", "RudolphTable14YearsOldGirls", "RudolphTable15YearsOldGirls", "RudolphTable16YearsOldGirls", "RudolphTable17YearsOldGirls", "RudolphTable18YearsOldGirls", "RudolphTableOpenGirls", };
         List<double> rudolphTable8YearsOldBoys = new List<double>();
@@ -139,6 +147,7 @@ class Program
                 }
             }
         }
+        // every split in this function was based on the structure of pdf
         List<string> pages = text.ToString().Split("DieDisziplinen 400-1500F, 100/200S, 200R, 400Lsindstatistischunzureichendgesichertund solltenzurLeistungseinschätzung nichtherangezogenwerden.2").ToList();
         List<double> times = new List<double>();
         int adder = 0;
@@ -150,6 +159,7 @@ class Program
                 List<string> one = w[i].Split(" ").ToList();
                 foreach (string word in one)
                 {
+                    // the following lines of code, was my lazyness, i will replace it with shorter code
                     if (word.Contains(":"))
                     {
                         if (adder < 340)
@@ -260,6 +270,7 @@ class Program
     }
     static double CSTD (string xd)
     {
+        // this function grabs time like 3:21.55 and convert it to 201.55 so it can be easy written as a double
         string[] list = xd.Split(':');
         double newer = Math.Round(((list.Length > 1) ? (Convert.ToDouble(list[0]) * 60) + Convert.ToDouble(list[1]) : Convert.ToDouble(list[0])),2);
         return newer;
@@ -353,6 +364,7 @@ class Program
     }
     static List<double> GettingLongCurseWorldRecordsMen()
     {
+        
         string url = "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=1";
         var currentTimes = Loader(url).DocumentNode.SelectSingleNode("//td[@class='swimtime']");
         List<double> tab = new List<double>();
@@ -404,6 +416,7 @@ class Program
     }
     static List<double> GettingTimes(string urls)
     {
+        // for now i do not use this function and it can be removed
         List<string> url = GettingDistancesFromLinks(urls);
         List<double> strings = new List<double>();
         foreach (var u in url)
