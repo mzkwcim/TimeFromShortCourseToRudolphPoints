@@ -10,7 +10,7 @@ class Formater
 {
     public static string StrokeTranslation(string distance)
     {
-        // this part of code is responsible for translation of stroke
+        // this part of code is responsible for translation of distance to collumnName
         string[] words = distance.Split(' ');
         switch (words[1])
         {
@@ -26,7 +26,20 @@ class Formater
     {
         // this function grabs time like 3:21.55 and convert it to 201.55 so it can be easy written as a double
         string[] list = xd.Split(':');
-        return Math.Round(((list.Length > 1) ? (Convert.ToDouble(list[0]) * 60) + Convert.ToDouble(list[1]) : Convert.ToDouble(list[0])), 2);
+        return Math.Round((list.Length > 1) ? (Convert.ToDouble(list[0]) * 60) + Convert.ToDouble(list[1]) : Convert.ToDouble(list[0]), 2);
+    }
+    public static string TranslateStrokeBack(string key)
+    {
+        string[] words = key.Split('_');
+        switch (words[0])
+        {
+            case "freestyle": return words[1] + " Dowolnym";
+            case "backstroke": return words[1] + " Grzbietowym";
+            case "breaststroke": return words[1] + " Klasycznym";
+            case "butterfly": return words[1] + " Motylkowym";
+            case "medley": return words[1] + " Zmiennym";
+            default: return "";
+        }
     }
 }
 class Getter
@@ -34,13 +47,13 @@ class Getter
     public static string GetAge(string url)
     {
         int date = DateTime.Now.Year - Convert.ToInt32(GetNumericValue(Scraper.Loader(url).DocumentNode.SelectSingleNode("//div[@id='name']").InnerText));
-        return (date <= 18) ? Convert.ToString(date) : "open";
+        return (date <= 18) ? Convert.ToString(date) : "open"; //this function return the Age of athlete or return open if an age is above 18
     }
     public static string GetNumericValue(string input)
     {
         Regex regex = new Regex(@"\d+");
         Match match = regex.Match(input);
-        return (match.Success) ? match.Value : string.Empty;
+        return (match.Success) ? match.Value : string.Empty; //this is helper function responsible for getting rid of non numeric strings
     }
     public static string GetTableName(string url) => (GetAge(url) == "open") ? $"rudolphtableopen{CheckGender(url)}" : $"rudolphtable{GetAge(url)}yearsold{CheckGender(url)}";
     public static string CheckGender(string url) => Scraper.Loader(url).DocumentNode.SelectSingleNode("//div[@id='name']").InnerHtml.Contains("gender1.png") ? "boys" : "girls";
@@ -55,7 +68,6 @@ class SQLQueryCreater
         {
             createTableQueryTest += (i != collumnNames.Count - 1) ? $"\"{collumnNames[i].ToLower()}\" DOUBLE PRECISION, " : $"\"{collumnNames[i].ToLower()}\" DOUBLE PRECISION );";
         }
-        Console.WriteLine(createTableQueryTest);
         return createTableQueryTest;
     }
     public static string AddValuesToQuery(string name, List<string> collumnNames, List<double> tableValues)
@@ -80,7 +92,6 @@ class SQLQueryCreater
     public static List<string> GetRudolphPointsQuery(string url)
     {
         Dictionary<string, double> records = DictionaryGetter.Calculator(DictionaryGetter.AthleteRecords(url), url);
-        string tableName = Getter.GetTableName(url);
         List<string> queries = new List<string>();
         foreach (var (key, value) in records)
         {
@@ -104,29 +115,21 @@ class DictionaryGetter
             {
                 double doubled = Math.Round(((1 / Math.Pow((value / 1000), (1.0 / 3.0))) * wrs[adder]), 2);
                 doubleded.Add(Formater.StrokeTranslation(key), doubled);
-                Console.WriteLine(key + " " + value);
                 adder++;
             }
-            catch (Exception ex)
+            catch
             {
 
             }
-        }
-        foreach (var (key, value) in doubleded)
-        {
-            Console.WriteLine(key + " " + value);
         }
         return doubleded;
     }
     public static Dictionary<string, double> AthleteRecords(string url)
     {
-        Dictionary<string, double> records = new Dictionary<string, double>();
-        //rawRecords gets fina points
-        var rawRecords = Scraper.Loader(url).DocumentNode.SelectNodes("//td[@class='code']");
-        //distances gets event name
-        var distances = Scraper.Loader(url).DocumentNode.SelectNodes("//td[@class='event']//a");
-        // pool gets pool length 25m or 50m
-        var pool = Scraper.Loader(url).DocumentNode.SelectNodes("//td[@class='course']");
+        Dictionary<string, double> records = new Dictionary<string, double>(); 
+        var rawRecords = Scraper.Loader(url).DocumentNode.SelectNodes("//td[@class='code']"); //rawRecords gets fina points
+        var distances = Scraper.Loader(url).DocumentNode.SelectNodes("//td[@class='event']//a"); //distances gets event name
+        var pool = Scraper.Loader(url).DocumentNode.SelectNodes("//td[@class='course']"); // pool gets pool length 25m or 50m
         for (int i = 0; i < rawRecords.Count; i++)
         {
             //if statement here is kind of filter that handles empty htmls, only allows 25m distances, discards 100m Medley, couse there is no such an event on long course. There is also clausule that doesn't allow 25m distances, couse it is kids only distance and it coused some exceptions
@@ -142,8 +145,7 @@ class ListGetter
 {
     static List<string> GettingDistancesFromLinks(string url)
     {
-        string url2 = "";
-        url2 = (Getter.CheckGender(url) == "boys") ? "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=0" : "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=2&course=LCM&styleId=0";
+        string url2 = (Getter.CheckGender(url) == "boys") ? "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=1&course=LCM&styleId=0" : "https://www.swimrankings.net/index.php?page=recordDetail&recordListId=50001&gender=2&course=LCM&styleId=0";
         List<string> tab = new List<string>();
         List<string> distances = new List<string>() { "1", "2", "3", "5", "6", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19" };
         for (int i = 0; i < distances.Count; i++)
@@ -187,20 +189,18 @@ class SQL
 {
     public static void Connection(string name, List<string> collumnNames, List<double> tableValues)
     {
-        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=postgresv2";
-
+        string connectionString = "Host=localhost;Username=postgres;xd;Database=postgresv2";
         using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
         {
             try
             {
-                Console.WriteLine("haha");
                 connection.Open();
                 if (TableExists(connection, name))
                 {
                     using (NpgsqlCommand command2 = new NpgsqlCommand(SQLQueryCreater.AddValuesToQuery(name, collumnNames, tableValues), connection))
                     {
                         command2.ExecuteNonQuery();
-                        Console.WriteLine("Powodzenie");
+                        Console.WriteLine("Dane zostały dodane do tabeli");
                     }
                 }
                 else
@@ -213,7 +213,7 @@ class SQL
                     using (NpgsqlCommand command2 = new NpgsqlCommand(SQLQueryCreater.AddValuesToQuery(name, collumnNames, tableValues), connection))
                     {
                         command2.ExecuteNonQuery();
-                        Console.WriteLine("Powodzenie");
+                        Console.WriteLine("Dane zostały dodane do tabeli");
                     }
                 }
             }
@@ -236,32 +236,25 @@ class SQL
     }
     public static void DataBaseConnection(string query, string key)
     {
-        string connectionString = "Host=localhost;Username=postgres;Password=Mzkwcim181099!;Database=postgresv2";
-        // Utwórz obiekt NpgsqlConnection
+        string connectionString = "Host=localhost;Username=postgres;xd;Database=postgresv2";
         using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
         {
-            // Otwórz połączenie
             connection.Open();
-            // Utwórz obiekt NpgsqlCommand
             using (NpgsqlCommand command = new NpgsqlCommand(query, connection))
             {
                 using (NpgsqlDataReader reader = command.ExecuteReader())
                 {
-                    // Sprawdź, czy istnieją wyniki
                     if (reader.HasRows)
                     {
-                        // Przetwarzaj wyniki zapytania
                         while (reader.Read())
                         {
-                            // Odczytaj wartości z wyników
                             object value1 = reader["punkty"];
-
-                            Console.WriteLine($"{key}: {value1}");
+                            Console.WriteLine($"Na dystansie {Formater.TranslateStrokeBack(key)} uzyskałeś {value1}pkt w skali Rudolpha");
                         }
                     }
                     else
                     {
-                        Console.WriteLine($"Na dystansie {key} uzyskałeś/aś mniej niż 1 pkt");
+                        Console.WriteLine($"Na dystansie {Formater.TranslateStrokeBack(key)} uzyskałeś/aś mniej niż 1 pkt");
                     }
                 }
             }
@@ -331,15 +324,12 @@ class Program
 {
     static void Main()
     {
-        //following 2 lines should be used only when there is new rudolphtable to insert into database
-        string pdfFilePath = "C:\\Users\\mzkwcim\\Desktop\\punkttabelle_rudolph_2023.pdf";
+        string pdfFilePath = "C:\\Users\\mzkwcim\\Desktop\\punkttabelle_rudolph_2023.pdf"; //following 2 lines should be used only when there is new rudolphtable to insert into database
         FromPdfToSQL.Creater(pdfFilePath);
-        // string url is a profile of an Athlete on swimrankings.net
-        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4426838";
+        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4426838"; // string url is a profile of an Athlete on swimrankings.net
         List<string> queryList = new List<string>();
         int adder = 0;
         Dictionary<string, double> records = DictionaryGetter.Calculator(DictionaryGetter.AthleteRecords(url), url);
-        Console.WriteLine(Getter.GetTableName(url));
         List<string> queries = SQLQueryCreater.GetRudolphPointsQuery(url);
         foreach (var (key, value) in records)
         {
