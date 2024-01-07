@@ -268,58 +268,11 @@ class SQL
         }
     }
 }
-class Program
+class PDF
 {
-    static void Main()
+    public static List<string> GetTextFromPdf(string pdfFilePath)
     {
-        //following 2 lines should be used only when there is new rudolphtable to insert into database
-        string pdfFilePath = "C:\\Users\\mzkwcim\\Desktop\\punkttabelle_rudolph_2023.pdf";
-        Creater(pdfFilePath);
-        // string url is a profile of an Athlete on swimrankings.net
-        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4426838";
-        List<string> queryList = new List<string>();
-        int adder = 0;
-        Dictionary<string, double> records = DictionaryGetter.Calculator(DictionaryGetter.AthleteRecords(url), url);
-        Console.WriteLine(Getter.GetTableName(url));
-        List<string> queries = SQLQueryCreater.GetRudolphPointsQuery(url);
-        foreach (var (key, value) in records)
-        {
-            SQL.DataBaseConnection(queries[adder], key);
-            adder++;
-        }
-    }
-    static void Creater(string pdfFilePath)
-    {
-        //in the near future i will shorten this part of code, i was lazy, couse my initial idea on how to prepare this code with class had a lot of errors.
         StringBuilder text = new StringBuilder();
-        List<string> nazwy = new List<string>() { "RudolphTable8YearsOldBoys", "RudolphTable9YearsOldBoys", "RudolphTable10YearsOldBoys", "RudolphTable11YearsOldBoys", "RudolphTable12YearsOldBoys", "RudolphTable13YearsOldBoys", "RudolphTable14YearsOldBoys", "RudolphTable15YearsOldBoys", "RudolphTable16YearsOldBoys", "RudolphTable17YearsOldBoys", "RudolphTable18YearsOldBoys", "RudolphTableOpenBoys", "RudolphTable8YearsOldGirls", "RudolphTable9YearsOldGirls", "RudolphTable10YearsOldGirls", "RudolphTable11YearsOldGirls", "RudolphTable12YearsOldGirls", "RudolphTable13YearsOldGirls", "RudolphTable14YearsOldGirls", "RudolphTable15YearsOldGirls", "RudolphTable16YearsOldGirls", "RudolphTable17YearsOldGirls", "RudolphTable18YearsOldGirls", "RudolphTableOpenGirls", };
-        List<double> rudolphTable8YearsOldBoys = new List<double>();
-        List<double> rudolphTable9YearsOldBoys = new List<double>();
-        List<double> rudolphTable10YearsOldBoys = new List<double>();
-        List<double> rudolphTable11YearsOldBoys = new List<double>();
-        List<double> rudolphTable12YearsOldBoys = new List<double>();
-        List<double> rudolphTable13YearsOldBoys = new List<double>();
-        List<double> rudolphTable14YearsOldBoys = new List<double>();
-        List<double> rudolphTable15YearsOldBoys = new List<double>();
-        List<double> rudolphTable16YearsOldBoys = new List<double>();
-        List<double> rudolphTable17YearsOldBoys = new List<double>();
-        List<double> rudolphTable18YearsOldBoys = new List<double>();
-        List<double> rudolphTableOpenBoys = new List<double>();
-        List<double> rudolphTable8YearsOldGirls = new List<double>();
-        List<double> rudolphTable9YearsOldGirls = new List<double>();
-        List<double> rudolphTable10YearsOldGirls = new List<double>();
-        List<double> rudolphTable11YearsOldGirls = new List<double>();
-        List<double> rudolphTable12YearsOldGirls = new List<double>();
-        List<double> rudolphTable13YearsOldGirls = new List<double>();
-        List<double> rudolphTable14YearsOldGirls = new List<double>();
-        List<double> rudolphTable15YearsOldGirls = new List<double>();
-        List<double> rudolphTable16YearsOldGirls = new List<double>();
-        List<double> rudolphTable17YearsOldGirls = new List<double>();
-        List<double> rudolphTable18YearsOldGirls = new List<double>();
-        List<double> rudolphTableOpenGirls = new List<double>();
-        List<List<double>> listalist = new List<List<double>>() { rudolphTable8YearsOldBoys, rudolphTable9YearsOldBoys, rudolphTable10YearsOldBoys, rudolphTable11YearsOldBoys, rudolphTable12YearsOldBoys, rudolphTable13YearsOldBoys, rudolphTable14YearsOldBoys, rudolphTable15YearsOldBoys, rudolphTable16YearsOldBoys, rudolphTable17YearsOldBoys, rudolphTable18YearsOldBoys, rudolphTableOpenBoys, rudolphTable8YearsOldGirls, rudolphTable9YearsOldGirls, rudolphTable10YearsOldGirls, rudolphTable11YearsOldGirls, rudolphTable12YearsOldGirls, rudolphTable13YearsOldGirls, rudolphTable14YearsOldGirls, rudolphTable15YearsOldGirls, rudolphTable16YearsOldGirls, rudolphTable17YearsOldGirls, rudolphTable18YearsOldGirls, rudolphTableOpenGirls, };
-        List<string> collumnNames = new List<string>() { "Punkty", "Freestyle_50m", "Freestyle_100m", "Freestyle_200m", "Freestyle_400m", "Freestyle_800m", "Freestyle_1500m", "Breaststroke_50m", "Breaststroke_100m", "Breaststroke_200m", "Butterfly_50m", "Butterfly_100m", "Butterfly_200m", "Backstroke_50m", "Backstroke_100m", "Backstroke_200m", "Medley_200m", "Medley_400m" };
-
         using (PdfReader pdfReader = new PdfReader(pdfFilePath))
         {
             using (PdfDocument pdfDocument = new PdfDocument(pdfReader))
@@ -332,9 +285,22 @@ class Program
                 }
             }
         }
-        // every split in this function was based on the structure of pdf
-        List<string> pages = text.ToString().Split("DieDisziplinen 400-1500F, 100/200S, 200R, 400Lsindstatistischunzureichendgesichertund solltenzurLeistungseinschätzung nichtherangezogenwerden.2").ToList();
-        int adder = 0;
+        return text.ToString().Split("DieDisziplinen 400-1500F, 100/200S, 200R, 400Lsindstatistischunzureichendgesichertund solltenzurLeistungseinschätzung nichtherangezogenwerden.2").ToList();
+    }
+}
+class FromPdfToSQL
+{
+    public static void Creater(string pdfFilePath)
+    {
+        List<string> nazwy = new List<string>() { "RudolphTable8YearsOldBoys", "RudolphTable9YearsOldBoys", "RudolphTable10YearsOldBoys", "RudolphTable11YearsOldBoys", "RudolphTable12YearsOldBoys", "RudolphTable13YearsOldBoys", "RudolphTable14YearsOldBoys", "RudolphTable15YearsOldBoys", "RudolphTable16YearsOldBoys", "RudolphTable17YearsOldBoys", "RudolphTable18YearsOldBoys", "RudolphTableOpenBoys", "RudolphTable8YearsOldGirls", "RudolphTable9YearsOldGirls", "RudolphTable10YearsOldGirls", "RudolphTable11YearsOldGirls", "RudolphTable12YearsOldGirls", "RudolphTable13YearsOldGirls", "RudolphTable14YearsOldGirls", "RudolphTable15YearsOldGirls", "RudolphTable16YearsOldGirls", "RudolphTable17YearsOldGirls", "RudolphTable18YearsOldGirls", "RudolphTableOpenGirls", };
+        List<List<double>> listalist = new List<List<double>>();
+        List<string> collumnNames = new List<string>() { "Punkty", "Freestyle_50m", "Freestyle_100m", "Freestyle_200m", "Freestyle_400m", "Freestyle_800m", "Freestyle_1500m", "Breaststroke_50m", "Breaststroke_100m", "Breaststroke_200m", "Butterfly_50m", "Butterfly_100m", "Butterfly_200m", "Backstroke_50m", "Backstroke_100m", "Backstroke_200m", "Medley_200m", "Medley_400m" };
+        for (int i = 0; i < nazwy.Count; i++)
+        {
+            listalist.Add(new List<double>());
+        }
+        List<string> pages = PDF.GetTextFromPdf(pdfFilePath);
+        int adder = 0, inter = 0;
         foreach (string page in pages)
         {
             List<string> w = page.Split("\n").ToList();
@@ -343,104 +309,12 @@ class Program
                 List<string> one = w[i].Split(" ").ToList();
                 foreach (string word in one)
                 {
-                    // the following lines of code, was my lazyness, i will replace it with shorter code
                     if (word.Contains(":"))
                     {
-                        if (adder < 340)
+                        listalist[inter].Add(Formater.CSTD(word.Replace(",", ".")));
+                        if ((adder + 1) % 340 == 0)
                         {
-                            rudolphTable8YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 340 && adder < 680)
-                        {
-                            rudolphTable9YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 680 && adder < 1020)
-                        {
-                            rudolphTable10YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 1020 && adder < 1360)
-                        {
-                            rudolphTable11YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 1360 && adder < 1700)
-                        {
-                            rudolphTable12YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 1700 && adder < 2040)
-                        {
-                            rudolphTable13YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 2040 && adder < 2380)
-                        {
-                            rudolphTable14YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 2380 && adder < 2720)
-                        {
-                            rudolphTable15YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 2720 && adder < 3060)
-                        {
-                            rudolphTable16YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 3060 && adder < 3400)
-                        {
-                            rudolphTable17YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 3400 && adder < 3740)
-                        {
-                            rudolphTable18YearsOldBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 3740 && adder < 4080)
-                        {
-                            rudolphTableOpenBoys.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        if (adder >= 4080 && adder < 4420)
-                        {
-                            rudolphTable8YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 4420 && adder < 4760)
-                        {
-                            rudolphTable9YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 4760 && adder < 5100)
-                        {
-                            rudolphTable10YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 5100 && adder < 5440)
-                        {
-                            rudolphTable11YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 5440 && adder < 5780)
-                        {
-                            rudolphTable12YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 5780 && adder < 6120)
-                        {
-                            rudolphTable13YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 6120 && adder < 6460)
-                        {
-                            rudolphTable14YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 6460 && adder < 6800)
-                        {
-                            rudolphTable15YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 6800 && adder < 7140)
-                        {
-                            rudolphTable16YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 7140 && adder < 7480)
-                        {
-                            rudolphTable17YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 7480 && adder < 7820)
-                        {
-                            rudolphTable18YearsOldGirls.Add(Formater.CSTD(word.Replace(",", ".")));
-                        }
-                        else if (adder >= 7820 && adder < 8160)
-                        {
-                            rudolphTableOpenGirls.Add(Formater.CSTD(word.Replace(",", ".")));
+                            inter++;
                         }
                         adder++;
                     }
@@ -450,6 +324,27 @@ class Program
         for (int i = 0; i < nazwy.Count; i++)
         {
             SQL.Connection(nazwy[i], collumnNames, listalist[i]);
+        }
+    }
+}
+class Program
+{
+    static void Main()
+    {
+        //following 2 lines should be used only when there is new rudolphtable to insert into database
+        string pdfFilePath = "C:\\Users\\mzkwcim\\Desktop\\punkttabelle_rudolph_2023.pdf";
+        FromPdfToSQL.Creater(pdfFilePath);
+        // string url is a profile of an Athlete on swimrankings.net
+        string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4426838";
+        List<string> queryList = new List<string>();
+        int adder = 0;
+        Dictionary<string, double> records = DictionaryGetter.Calculator(DictionaryGetter.AthleteRecords(url), url);
+        Console.WriteLine(Getter.GetTableName(url));
+        List<string> queries = SQLQueryCreater.GetRudolphPointsQuery(url);
+        foreach (var (key, value) in records)
+        {
+            SQL.DataBaseConnection(queries[adder], key);
+            adder++;
         }
     }
     
