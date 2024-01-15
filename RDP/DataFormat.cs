@@ -22,7 +22,7 @@ namespace Getting_Rudolph_Table_From_PDF_To_PostgreSQL
                 default: return "";
             }
         }
-        public static double CSTD(string xd)
+        public static double ConvertTimeStringToDouble(string xd)
         {
             // this function grabs time like 3:21.55 and convert it to 201.55 so it can be easy written as a double
             string[] list = xd.Split(':');

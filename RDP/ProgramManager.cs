@@ -14,7 +14,6 @@ class ProgramManager
         string pdfFilePath = "Set your own path to downloaded rudolphtable pdf file"; //following 2 lines should be used only when there is new rudolphtable to insert into database
         PdfDataExtractor.Creater(pdfFilePath);
         string url = "https://www.swimrankings.net/index.php?page=athleteDetail&athleteId=4426838"; // string url is a profile of an Athlete on swimrankings.net
-        List<string> queryList = new List<string>();
         int adder = 0;
         Dictionary<string, double> records = DictionaryBuilder.CalculatePointsFromShortCourseToLongCourseTime(DictionaryBuilder.AthleteRecords(url), url);
         List<string> queries = PostgreSQLQueryBuilder.GetRudolphPointsQuery(url);
