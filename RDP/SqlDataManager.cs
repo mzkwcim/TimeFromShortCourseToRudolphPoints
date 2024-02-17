@@ -11,7 +11,7 @@ namespace Getting_Rudolph_Table_From_PDF_To_PostgreSQL
     {
         public static void Connection(string name, List<string> collumnNames, List<double> tableValues)
         {
-            string connectionString = "Host=localhost;Username=postgres;password=kk;Database=kk";
+            string connectionString = "Host=localhost;Username=postgres;password=xd;Database=RudolphTable";
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
             {
                 try
@@ -52,13 +52,13 @@ namespace Getting_Rudolph_Table_From_PDF_To_PostgreSQL
                 command.Connection = connection;
                 command.CommandText = $"SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = @tableName)";
                 command.Parameters.AddWithValue("@tableName", tableName.ToLower());
-                object result = command.ExecuteScalar();
+                object ?result = command.ExecuteScalar();
                 return result != null && (bool)result;
             }
         }
         public static void DataBaseConnection(string query, string key)
         {
-            string connectionString = "Host=localhost;Username=postgres;password=kk;Database=kk";
+            string connectionString = "Host=localhost;Username=postgres;password=xd;Database=RudolphTable";
             using (NpgsqlConnection connection = new NpgsqlConnection(connectionString))
             {
                 connection.Open();
